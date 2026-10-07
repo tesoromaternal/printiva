@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-script: "Kaushan Script", cursive;
+  --font-display: "Bebas Neue", "Impact", sans-serif;
+  --font-marker: "Permanent Marker", "Comic Sans MS", cursive;
+
+  --color-brand: #ec1e79;
+  --color-brand-dark: #c8115f;
+  --color-brand-soft: #ffe3ef;
+  --color-ink: #14161f;
+  --color-ink-soft: #4b5060;
+  --color-sun: #ffc93c;
+  --color-sky: #22b8e6;
+  --color-grape: #8b5cf6;
+  --color-tangerine: #ff8a3d;
+  --color-cloud: #f4f5f8;
+  --color-line: #e6e7ec;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand;
+  }
+}
+
+@utility container-page {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+@utility btn-brand {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 font-extrabold tracking-wide text-white uppercase shadow-lg shadow-brand/25 transition hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-ink {
+  @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-white transition hover:bg-black active:scale-[0.98];
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

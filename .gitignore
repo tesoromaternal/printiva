@@ -1,0 +1,12 @@
+dist/
+.astro/
+.vercel/
+node_modules/
+.env
+.env.*
+!.env.example
+local.db*
+.DS_Store
+
+# Fotos subidas en desarrollo sin Vercel Blob
+public/uploads/
