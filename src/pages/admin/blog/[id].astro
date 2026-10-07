@@ -1,0 +1,29 @@
+---
+import PostForm from "../../../features/admin/components/PostForm";
+import { parseId } from "../../../features/admin/http";
+import { getPost } from "../../../features/blog/repository";
+import AdminShell from "../../../layouts/AdminShell.astro";
+
+export const prerender = false;
+
+const id = parseId(Astro.params.id);
+const post = id ? await getPost(id) : null;
+if (!id || !post) return Astro.redirect("/admin/blog");
+---
+
+<AdminShell title={post.title} heading="Editar post" back={{ href: "/admin/blog", label: "Blog" }}>
+  <PostForm
+    client:only="react"
+    id={id}
+    publishedSlug={post.status === "published" ? post.slug : null}
+    initial={{
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      coverUrl: post.coverUrl,
+      coverAlt: post.coverAlt,
+      contentHtml: post.contentHtml,
+      status: post.status,
+    }}
+  />
+</AdminShell>

@@ -1,0 +1,45 @@
+---
+import { FileText } from "lucide-react";
+
+import { listPosts } from "../../../features/blog/repository";
+import AdminShell from "../../../layouts/AdminShell.astro";
+
+export const prerender = false;
+
+const posts = await listPosts();
+const formatDate = (iso: string | null) => (iso ? new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(iso)) : "—");
+---
+
+<AdminShell title="Blog" heading={`Blog (${posts.length})`}>
+  <a slot="actions" href="/admin/blog/nuevo" class="btn-brand text-sm">+ Nuevo post</a>
+
+  {
+    posts.length === 0 ? (
+      <div class="rounded-3xl bg-white p-10 text-center shadow-sm">
+        <FileText className="mx-auto size-10 text-brand" />
+        <p class="mt-3 text-lg font-extrabold">Aún no hay posts</p>
+        <p class="mt-1 text-sm text-ink-soft">Ideas: “Cómo elegir la camiseta perfecta para estampar”, “10 regalos personalizados para el Día de la Madre”…</p>
+        <a href="/admin/blog/nuevo" class="btn-brand mt-5 text-sm">Escribir el primero</a>
+      </div>
+    ) : (
+      <ul class="divide-y divide-line overflow-hidden rounded-3xl bg-white shadow-sm">
+        {posts.map((post) => (
+          <li>
+            <a href={`/admin/blog/${post.id}`} class="flex items-center gap-4 px-4 py-3 transition hover:bg-cloud">
+              <span class="size-14 shrink-0 overflow-hidden rounded-xl bg-cloud">
+                {post.coverUrl ? <img src={post.coverUrl} alt="" class="h-full w-full object-cover" loading="lazy" /> : <span class="grid h-full place-items-center text-2xl">📝</span>}
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-bold">{post.title}</span>
+                <span class="block truncate text-xs text-ink-soft">/blog/{post.slug} · editado {formatDate(post.updatedAt)}</span>
+              </span>
+              <span class:list={["rounded-full px-2.5 py-0.5 text-xs font-bold", post.status === "published" ? "bg-[#D3F2E1] text-[#2a7a4f]" : "bg-sun/30"]}>
+                {post.status === "published" ? "Publicado" : "Borrador"}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</AdminShell>

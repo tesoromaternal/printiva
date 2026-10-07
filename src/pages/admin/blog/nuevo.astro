@@ -1,0 +1,15 @@
+---
+import PostForm from "../../../features/admin/components/PostForm";
+import AdminShell from "../../../layouts/AdminShell.astro";
+
+export const prerender = false;
+---
+
+<AdminShell title="Nuevo post" heading="Nuevo post" back={{ href: "/admin/blog", label: "Blog" }}>
+  <PostForm
+    client:only="react"
+    id={null}
+    publishedSlug={null}
+    initial={{ title: "", slug: "", excerpt: "", coverUrl: null, coverAlt: "", contentHtml: "", status: "draft" }}
+  />
+</AdminShell>

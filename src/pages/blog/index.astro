@@ -1,0 +1,44 @@
+---
+import SectionHeading from "../../components/SectionHeading.astro";
+import { htmlToText, readingMinutes } from "../../features/blog/sanitize";
+import { getPublishedPosts } from "../../features/blog/repository";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const posts = await getPublishedPosts();
+const formatDate = (iso: string | null) => (iso ? new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(iso)) : "");
+---
+
+<BaseLayout title="Blog" description="Ideas de regalos personalizados, consejos de diseño y novedades de Printiva.">
+  <div class="container-page py-10">
+    <SectionHeading as="h1" title="Blog ✍️" subtitle="Ideas de regalos, consejos para tu diseño y todo lo que pasa en el taller." />
+
+    {
+      posts.length === 0 ? (
+        <p class="rounded-3xl bg-cloud p-10 text-center font-semibold text-ink-soft">Muy pronto, nuestras primeras historias. ✨</p>
+      ) : (
+        <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post, index) => (
+            <li class:list={[index === 0 && "sm:col-span-2 lg:col-span-3"]}>
+              <a href={`/blog/${post.slug}`} class:list={["group block overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg", index === 0 && "lg:grid lg:grid-cols-2"]}>
+                <div class="aspect-[16/10] overflow-hidden bg-brand-soft">
+                  {post.coverUrl ? (
+                    <img src={post.coverUrl} alt={post.coverAlt} loading={index === 0 ? "eager" : "lazy"} class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  ) : (
+                    <div class="grid h-full place-items-center font-marker text-4xl text-brand">Printiva</div>
+                  )}
+                </div>
+                <div class:list={["p-6", index === 0 && "lg:flex lg:flex-col lg:justify-center lg:p-10"]}>
+                  <p class="text-xs font-bold tracking-wide text-ink-soft uppercase">
+                    {formatDate(post.publishedAt)} · {readingMinutes(post.contentHtml)} min de lectura
+                  </p>
+                  <h2 class:list={["mt-2 font-extrabold group-hover:text-brand", index === 0 ? "text-3xl" : "text-xl"]}>{post.title}</h2>
+                  <p class="mt-2 line-clamp-3 text-ink-soft">{post.excerpt || htmlToText(post.contentHtml).slice(0, 180)}</p>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</BaseLayout>
