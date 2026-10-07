@@ -61,6 +61,13 @@ export const posts = sqliteTable("posts", {
   // HTML del editor visual, SANEADO en el servidor antes de guardarse.
   contentHtml: text("content_html").notNull().default(""),
   status: text("status").$type<"draft" | "published">().notNull().default("draft"),
+  // Bloque "llamada a la acción" al final del post. Textos null = valores por
+  // defecto (features/blog/cta.ts), así cambiar el default no exige migrar.
+  ctaEnabled: integer("cta_enabled", { mode: "boolean" }).notNull().default(true),
+  ctaTitle: text("cta_title"),
+  ctaText: text("cta_text"),
+  ctaLabel: text("cta_label"),
+  ctaUrl: text("cta_url"),
   publishedAt: text("published_at"),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),

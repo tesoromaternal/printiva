@@ -24,6 +24,11 @@ if (!id || !post) return Astro.redirect("/admin/blog");
       coverAlt: post.coverAlt,
       contentHtml: post.contentHtml,
       status: post.status,
+      ctaEnabled: post.ctaEnabled,
+      ctaTitle: post.ctaTitle,
+      ctaText: post.ctaText,
+      ctaLabel: post.ctaLabel,
+      ctaUrl: post.ctaUrl,
     }}
   />
 </AdminShell>

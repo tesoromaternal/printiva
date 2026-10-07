@@ -5,6 +5,7 @@
 import { z } from "astro/zod";
 
 import { SLUG_PATTERN } from "../../lib/slug";
+import { isSafeCtaUrl } from "../blog/cta";
 import { MOCKUP_KINDS, PRINT_ARTS } from "../catalog/types";
 
 const slug = z.string().trim().min(2).max(80).regex(SLUG_PATTERN, "Solo minúsculas, números y guiones");
@@ -40,6 +41,15 @@ export const categoryInput = z.object({
 });
 export type CategoryInput = z.infer<typeof categoryInput>;
 
+/** Texto opcional: "" o solo espacios se guarda como null (= usar el default). */
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .nullable()
+    .transform((value) => (value ? value : null));
+
 export const postInput = z.object({
   title: z.string().trim().min(2).max(160),
   slug,
@@ -48,6 +58,12 @@ export const postInput = z.object({
   coverAlt: z.string().trim().max(200),
   contentHtml: z.string().max(200_000),
   status: z.enum(["draft", "published"]),
+  ctaEnabled: z.boolean(),
+  // Vacío = valor por defecto (features/blog/cta.ts).
+  ctaTitle: optionalText(80),
+  ctaText: optionalText(200),
+  ctaLabel: optionalText(40),
+  ctaUrl: optionalText(300).refine((url) => url === null || isSafeCtaUrl(url), "Usa una ruta interna (/tienda) o una URL https://"),
 });
 export type PostInput = z.infer<typeof postInput>;
 

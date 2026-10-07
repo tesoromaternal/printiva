@@ -1,4 +1,5 @@
 ---
+import { resolveCta } from "../../features/blog/cta";
 import { getPublishedPost } from "../../features/blog/repository";
 import { htmlToText, readingMinutes } from "../../features/blog/sanitize";
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -7,6 +8,7 @@ const post = await getPublishedPost(Astro.params.slug ?? "");
 if (!post) return Astro.rewrite("/404");
 
 const description = post.excerpt || htmlToText(post.contentHtml).slice(0, 160);
+const cta = resolveCta(post);
 const date = post.publishedAt ? new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(post.publishedAt)) : "";
 
 const jsonLd = {
@@ -32,11 +34,17 @@ const jsonLd = {
     <!-- contentHtml se saneó en el servidor al guardarse (features/blog/sanitize.ts). -->
     <div class="prose prose-lg mt-10 max-w-none prose-headings:font-extrabold prose-strong:font-extrabold prose-a:text-brand prose-img:rounded-2xl" set:html={post.contentHtml} />
 
-    <aside class="mt-14 rounded-3xl bg-brand-soft p-8 text-center">
-      <p class="font-marker text-2xl">¿Te inspiraste?</p>
-      <p class="mt-1 text-ink-soft">Tú lo imaginas, nosotros lo estampamos.</p>
-      <a href="/crea-tu-producto" class="btn-brand mt-5">Personaliza ahora</a>
-    </aside>
+    {
+      cta && (
+        <aside class="mt-14 rounded-3xl bg-brand-soft p-8 text-center">
+          <p class="font-marker text-2xl">{cta.title}</p>
+          <p class="mt-1 text-ink-soft">{cta.text}</p>
+          <a href={cta.url} class="btn-brand mt-5" {...(cta.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+            {cta.label}
+          </a>
+        </aside>
+      )
+    }
   </article>
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, "\\u003c")} />
 </BaseLayout>

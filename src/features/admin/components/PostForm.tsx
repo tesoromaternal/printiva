@@ -2,16 +2,85 @@ import { ExternalLink, Eye, Save, Send } from "lucide-react";
 import { useState } from "react";
 
 import { slugify } from "../../../lib/slug";
+import { CTA_DEFAULTS, CTA_DESTINATIONS, isSafeCtaUrl, resolveCta } from "../../blog/cta";
 import { apiJson } from "../client/api";
 import type { PostInput } from "../schemas";
 import { SingleImageField } from "./ImageField";
 import RichTextEditor from "./RichTextEditor";
-import { Card, DangerConfirm, Field, inputClass, SaveStatus, type SaveState } from "./ui";
+import { Card, DangerConfirm, Field, inputClass, SaveStatus, Toggle, type SaveState } from "./ui";
 
 interface Props {
   id: number | null;
   initial: PostInput;
   publishedSlug: string | null;
+}
+
+type SetField = <K extends keyof PostInput>(key: K, value: PostInput[K]) => void;
+
+/** Botón final del post: mostrar/ocultar, textos y destino, con vista previa. */
+function CtaCard({ values, errors, set }: { values: PostInput; errors: Record<string, string>; set: SetField }) {
+  const preset = CTA_DESTINATIONS.find((d) => d.url === (values.ctaUrl ?? CTA_DEFAULTS.url));
+  const [custom, setCustom] = useState(!preset);
+  const preview = resolveCta({ ...values, ctaUrl: values.ctaUrl && isSafeCtaUrl(values.ctaUrl) ? values.ctaUrl : null });
+
+  return (
+    <Card title="Botón al final del post">
+      <Toggle
+        checked={values.ctaEnabled}
+        onChange={(value) => set("ctaEnabled", value)}
+        label="Mostrar botón"
+        hint="Apágalo si el post no habla de un producto o servicio."
+      />
+      {values.ctaEnabled && (
+        <>
+          <Field label="Título" error={errors["ctaTitle"]}>
+            <input value={values.ctaTitle ?? ""} maxLength={80} placeholder={CTA_DEFAULTS.title} onChange={(event) => set("ctaTitle", event.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Frase" error={errors["ctaText"]}>
+            <input value={values.ctaText ?? ""} maxLength={200} placeholder={CTA_DEFAULTS.text} onChange={(event) => set("ctaText", event.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Texto del botón" error={errors["ctaLabel"]}>
+            <input value={values.ctaLabel ?? ""} maxLength={40} placeholder={CTA_DEFAULTS.label} onChange={(event) => set("ctaLabel", event.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Lleva a" error={errors["ctaUrl"]} hint={custom ? "Ruta de la tienda (/tienda) o URL completa https://" : undefined}>
+            <select
+              value={custom ? "__custom" : (preset?.url ?? CTA_DEFAULTS.url)}
+              onChange={(event) => {
+                const next = event.target.value;
+                setCustom(next === "__custom");
+                // El destino por defecto se guarda como null: si mañana cambia, este post lo sigue.
+                if (next !== "__custom") set("ctaUrl", next === CTA_DEFAULTS.url ? null : next);
+              }}
+              className={inputClass}
+            >
+              {CTA_DESTINATIONS.map((destination) => (
+                <option key={destination.url} value={destination.url}>{destination.label}</option>
+              ))}
+              <option value="__custom">Otra URL…</option>
+            </select>
+            {custom && (
+              <input
+                value={values.ctaUrl ?? ""}
+                maxLength={300}
+                placeholder="/regalos/mama o https://…"
+                aria-invalid={Boolean(errors["ctaUrl"]) || Boolean(values.ctaUrl && !isSafeCtaUrl(values.ctaUrl))}
+                onChange={(event) => set("ctaUrl", event.target.value)}
+                className={`${inputClass} mt-2 font-mono`}
+              />
+            )}
+          </Field>
+          {preview && (
+            <div className="rounded-2xl bg-brand-soft p-4 text-center" aria-label="Vista previa del botón">
+              <p className="font-marker text-lg">{preview.title}</p>
+              <p className="mt-0.5 text-xs text-ink-soft">{preview.text}</p>
+              <span className="mt-2 inline-block rounded-full bg-brand px-4 py-1.5 text-xs font-extrabold tracking-wide text-white uppercase">{preview.label}</span>
+              <p className="mt-1.5 truncate font-mono text-[0.65rem] text-ink-soft">→ {preview.url}</p>
+            </div>
+          )}
+        </>
+      )}
+    </Card>
+  );
 }
 
 export default function PostForm({ id, initial, publishedSlug }: Props) {
@@ -95,7 +164,7 @@ export default function PostForm({ id, initial, publishedSlug }: Props) {
               </button>
             )}
             <button type="button" onClick={() => void submit("published")} disabled={save.kind === "saving"} className="btn-brand w-full">
-              <Send className="size-4" /> {published ? "Actualizar publicado" : "Publicar"}
+              <Send className="size-4" /> {published ? "Actualizar" : "Publicar"}
             </button>
             {published && (
               <button type="button" onClick={() => void submit("draft")} disabled={save.kind === "saving"} className="text-sm font-bold text-ink-soft hover:text-ink">
@@ -110,6 +179,8 @@ export default function PostForm({ id, initial, publishedSlug }: Props) {
             </a>
           )}
         </Card>
+
+        <CtaCard values={values} errors={errors} set={set} />
 
         <Card title="Portada">
           <SingleImageField url={values.coverUrl} onChange={(url) => set("coverUrl", url)} folder="blog" label="Subir portada" />
