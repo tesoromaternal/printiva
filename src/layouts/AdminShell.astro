@@ -1,0 +1,75 @@
+---
+import { FileText, LayoutDashboard, LogOut, Package, Shapes, Store } from "lucide-react";
+
+import Logo from "../components/brand/Logo.astro";
+import AdminLayout from "./AdminLayout.astro";
+
+interface Props {
+  title: string;
+  heading?: string;
+  back?: { href: string; label: string };
+}
+
+const { title, heading, back } = Astro.props;
+const admin = Astro.locals.admin!;
+const path = Astro.url.pathname;
+
+const nav = [
+  { href: "/admin", label: "Resumen", icon: LayoutDashboard, exact: true },
+  { href: "/admin/productos", label: "Productos", icon: Package },
+  { href: "/admin/categorias", label: "Categorías", icon: Shapes },
+  { href: "/admin/blog", label: "Blog", icon: FileText },
+];
+const isActive = (item: (typeof nav)[number]) => (item.exact ? path === item.href : path.startsWith(item.href));
+
+// Avisos tras redirecciones (?creado=1, ?eliminado=1).
+const notice = Astro.url.searchParams.has("creado") ? "Creado ✓ · ya puedes seguir editando." : Astro.url.searchParams.has("eliminado") ? "Eliminado ✓" : null;
+---
+
+<AdminLayout title={title}>
+  <header class="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur">
+    <div class="container-page flex flex-wrap items-center gap-x-6 gap-y-2 py-2.5">
+      <Logo class="scale-75 origin-left -mr-10" />
+      <nav class="scrollbar-none order-last flex w-full gap-1 overflow-x-auto md:order-none md:w-auto" aria-label="Panel">
+        {
+          nav.map((item) => (
+            <a
+              href={item.href}
+              class:list={[
+                "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-bold whitespace-nowrap transition",
+                isActive(item) ? "bg-brand-soft text-brand" : "text-ink-soft hover:bg-cloud hover:text-ink",
+              ]}
+            >
+              <item.icon className="size-4" /> {item.label}
+            </a>
+          ))
+        }
+      </nav>
+      <div class="ml-auto flex items-center gap-1 text-sm">
+        <span class="hidden px-2 font-semibold text-ink-soft lg:inline">{admin.username}</span>
+        <a href="/" target="_blank" rel="noopener" class="flex items-center gap-1.5 rounded-full px-3 py-2 font-bold hover:bg-cloud">
+          <Store className="size-4" /><span class="hidden sm:inline">Ver tienda</span>
+        </a>
+        <form method="POST" action="/admin/logout">
+          <button type="submit" class="flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 font-bold text-white hover:bg-black">
+            <LogOut className="size-4" /> Salir
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="container-page py-8">
+    {back && <a href={back.href} class="mb-3 inline-block text-sm font-bold text-ink-soft hover:text-brand">← {back.label}</a>}
+    {
+      heading && (
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <h1 class="-rotate-1 font-marker text-3xl sm:text-4xl">{heading}</h1>
+          <slot name="actions" />
+        </div>
+      )
+    }
+    {notice && <p class="mb-6 rounded-2xl bg-[#D3F2E1] px-4 py-3 text-sm font-bold text-[#2a7a4f]" role="status">{notice}</p>}
+    <slot />
+  </main>
+</AdminLayout>

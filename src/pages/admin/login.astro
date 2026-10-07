@@ -1,0 +1,143 @@
+---
+import { Lock, User } from "lucide-react";
+
+import Logo from "../../components/brand/Logo.astro";
+import {
+  ADMIN_SESSION_COOKIE,
+  checkCredentials,
+  clearFailedAttempts,
+  createSession,
+  getAdminConfig,
+  lockoutMinutes,
+  recordFailedAttempt,
+  sessionCookieOptions,
+} from "../../features/admin/auth";
+import ProductMockup from "../../features/catalog/components/ProductMockup";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
+export const prerender = false;
+
+let error = "";
+let username = "";
+
+if (Astro.request.method === "POST") {
+  const config = getAdminConfig();
+  const ip = Astro.clientAddress;
+  const blockedFor = await lockoutMinutes(ip);
+
+  if (blockedFor > 0) {
+    error = `Demasiados intentos. Vuelve a probar en ${blockedFor} min.`;
+  } else if (config) {
+    const form = await Astro.request.formData();
+    username = String(form.get("username") ?? "").slice(0, 100);
+    const password = String(form.get("password") ?? "").slice(0, 200);
+
+    if (await checkCredentials(config, username, password)) {
+      await clearFailedAttempts(ip);
+      const session = await createSession(config.username);
+      Astro.cookies.set(ADMIN_SESSION_COOKIE, session.token, sessionCookieOptions(session.expiresAt));
+      return Astro.redirect("/admin");
+    }
+
+    await recordFailedAttempt(ip);
+    // Mensaje genérico: no revelamos si falló el usuario o la contraseña.
+    error = "Usuario o contraseña incorrectos.";
+  }
+}
+
+const field =
+  "w-full rounded-xl border-2 bg-white py-3 pr-4 pl-11 text-[15px] outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10";
+---
+
+<AdminLayout title="Ingresar">
+  <main class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(115deg,#FBEFE4_0%,#F6E3D3_45%,#EADBC9_100%)] px-4 py-12">
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div class="absolute -top-24 right-1/4 size-96 rounded-full bg-white/60 blur-3xl"></div>
+      <div class="absolute bottom-0 left-1/4 size-72 rounded-full bg-[#F7A8C8]/50 blur-3xl"></div>
+      <ProductMockup shadow={false} kind="tshirt" color="#FFFFFF" art="heart" className="absolute -bottom-6 -left-10 hidden w-72 -rotate-12 opacity-70 md:block" />
+      <ProductMockup shadow={false} kind="mug" color="#FFFFFF" text="Printiva" textFont="script" className="absolute top-10 -right-6 hidden w-56 rotate-12 opacity-70 md:block" />
+    </div>
+
+    <div class="relative w-full max-w-sm">
+      <div class="mb-6 flex justify-center"><Logo /></div>
+
+      <div class="rounded-3xl bg-white/95 p-7 shadow-xl shadow-ink/5 backdrop-blur sm:p-8">
+        <h1 class="-rotate-1 text-center font-marker text-3xl">Panel de <span class="text-brand">Printiva</span></h1>
+        <p class="mt-1 mb-7 text-center text-sm text-ink-soft">Solo para el equipo de Printiva.</p>
+
+        <form method="POST" class="space-y-4">
+          <div>
+            <label for="username" class="mb-1.5 block text-xs font-extrabold tracking-wide text-ink-soft uppercase">Usuario</label>
+            <div class="relative">
+              <User className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-soft" aria-hidden="true" />
+              <input
+                id="username"
+                name="username"
+                type="text"
+                value={username}
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+                autofocus={!username}
+                class:list={[field, error ? "border-brand" : "border-line"]}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="password" class="mb-1.5 block text-xs font-extrabold tracking-wide text-ink-soft uppercase">Contraseña</label>
+            <div class="relative">
+              <Lock className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-soft" aria-hidden="true" />
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                autofocus={Boolean(username)}
+                class:list={[field, "pr-20", error ? "border-brand" : "border-line"]}
+              />
+              <button
+                type="button"
+                data-toggle-password
+                aria-controls="password"
+                aria-pressed="false"
+                class="absolute top-1/2 right-2 -translate-y-1/2 rounded-lg px-2.5 py-1 text-xs font-bold text-ink-soft hover:bg-cloud hover:text-ink"
+              >
+                Mostrar
+              </button>
+            </div>
+          </div>
+
+          {
+            error && (
+              <p role="alert" class="rounded-xl bg-brand-soft px-4 py-2.5 text-sm font-semibold text-brand-dark">
+                {error}
+              </p>
+            )
+          }
+
+          <button type="submit" class="btn-brand w-full">Entrar</button>
+        </form>
+      </div>
+
+      <p class="mt-6 text-center text-sm">
+        <a href="/" class="font-bold text-ink-soft hover:text-brand">← Volver a la tienda</a>
+      </p>
+    </div>
+  </main>
+</AdminLayout>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>("[data-toggle-password]");
+  const input = document.querySelector<HTMLInputElement>("#password");
+  toggle?.addEventListener("click", () => {
+    if (!input) return;
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    toggle.textContent = show ? "Ocultar" : "Mostrar";
+    toggle.setAttribute("aria-pressed", String(show));
+    input.focus();
+  });
+</script>

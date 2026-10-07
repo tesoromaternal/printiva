@@ -1,0 +1,110 @@
+---
+import { count, desc, eq } from "drizzle-orm";
+import { Clock, FileText, Package, ShoppingBag } from "lucide-react";
+
+import { db } from "../../db/client";
+import { orderItems, orders, posts, products } from "../../db/schema";
+import AdminShell from "../../layouts/AdminShell.astro";
+import { formatPrice } from "../../lib/money";
+
+export const prerender = false;
+
+const admin = Astro.locals.admin!;
+
+const [[paid], [pending], [catalog], [published], recent] = await Promise.all([
+  db.select({ n: count() }).from(orders).where(eq(orders.status, "paid")),
+  db.select({ n: count() }).from(orders).where(eq(orders.status, "pending")),
+  db.select({ n: count() }).from(products).where(eq(products.active, true)),
+  db.select({ n: count() }).from(posts).where(eq(posts.status, "published")),
+  db
+    .select({
+      ref: orders.ref,
+      customerName: orders.customerName,
+      city: orders.city,
+      amountCents: orders.amountCents,
+      paidAt: orders.paidAt,
+      units: count(orderItems.id),
+    })
+    .from(orders)
+    .leftJoin(orderItems, eq(orderItems.orderRef, orders.ref))
+    .where(eq(orders.status, "paid"))
+    .groupBy(orders.ref)
+    .orderBy(desc(orders.paidAt))
+    .limit(10),
+]);
+
+const stats = [
+  { label: "Pedidos pagados", value: paid?.n ?? 0, icon: ShoppingBag, tint: "bg-brand-soft text-brand", href: null },
+  { label: "Pagos sin completar", value: pending?.n ?? 0, icon: Clock, tint: "bg-sun/25 text-tangerine", href: null },
+  { label: "Productos visibles", value: catalog?.n ?? 0, icon: Package, tint: "bg-sky/15 text-sky", href: "/admin/productos" },
+  { label: "Posts publicados", value: published?.n ?? 0, icon: FileText, tint: "bg-grape/15 text-grape", href: "/admin/blog" },
+];
+
+const formatDate = (iso: string | null) =>
+  iso ? new Intl.DateTimeFormat("es-ES", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso)) : "—";
+---
+
+<AdminShell title="Panel">
+  <h1 class="-rotate-1 font-marker text-4xl">Hola, <span class="text-brand">{admin.username}</span> 👋</h1>
+  <p class="mt-1 text-ink-soft">Esto es lo que está pasando en Printiva.</p>
+
+  <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {
+      stats.map(({ label, value, icon: Icon, tint, href }) => {
+        const Tag = href ? "a" : "div";
+        return (
+          <li>
+            <Tag href={href ?? undefined} class:list={["flex items-center gap-4 rounded-3xl bg-white p-5 shadow-sm", href && "transition hover:-translate-y-0.5 hover:shadow-md"]}>
+              <span class:list={["grid size-12 place-items-center rounded-2xl", tint]}>
+                <Icon className="size-6" />
+              </span>
+              <span>
+                <span class="block text-3xl font-black">{value}</span>
+                <span class="text-sm font-semibold text-ink-soft">{label}</span>
+              </span>
+            </Tag>
+          </li>
+        );
+      })
+    }
+  </ul>
+
+  <div class="mt-6 flex flex-wrap gap-3">
+    <a href="/admin/productos/nuevo" class="btn-brand text-sm">+ Nuevo producto</a>
+    <a href="/admin/blog/nuevo" class="btn-ink">+ Nuevo post</a>
+  </div>
+
+  <section class="mt-10 rounded-3xl bg-white p-6 shadow-sm">
+    <h2 class="text-xl font-extrabold">Últimos pedidos pagados</h2>
+    {
+      recent.length === 0 ? (
+        <p class="mt-4 rounded-2xl bg-cloud p-6 text-center text-sm font-semibold text-ink-soft">Todavía no hay pedidos pagados. ¡El primero está por llegar! ✨</p>
+      ) : (
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="text-xs tracking-wide text-ink-soft uppercase">
+              <tr>
+                <th class="py-2 pr-4">Fecha</th>
+                <th class="py-2 pr-4">Cliente</th>
+                <th class="py-2 pr-4">Ciudad</th>
+                <th class="py-2 pr-4">Líneas</th>
+                <th class="py-2 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line">
+              {recent.map((order) => (
+                <tr>
+                  <td class="py-3 pr-4 whitespace-nowrap">{formatDate(order.paidAt)}</td>
+                  <td class="py-3 pr-4 font-bold">{order.customerName}</td>
+                  <td class="py-3 pr-4">{order.city}</td>
+                  <td class="py-3 pr-4">{order.units}</td>
+                  <td class="py-3 text-right font-extrabold">{formatPrice(order.amountCents)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+  </section>
+</AdminShell>
