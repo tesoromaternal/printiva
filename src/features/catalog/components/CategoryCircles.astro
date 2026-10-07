@@ -1,0 +1,46 @@
+---
+import type { Category, PrintArt } from "../types";
+import ProductMockup from "./ProductMockup";
+
+interface Props {
+  categories: Category[];
+  activeSlug?: string;
+}
+
+const { categories, activeSlug } = Astro.props;
+
+const ART: Partial<Record<string, PrintArt>> = {
+  camisetas: "heart",
+  tazas: "heart",
+  bolsas: "heart",
+  "bebes-ninos": "paw",
+  empresas: "logo",
+};
+---
+
+<ul class="scrollbar-none -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 lg:grid lg:grid-cols-10 lg:overflow-visible">
+  {
+    categories.map((category) => (
+      <li class="w-24 shrink-0 lg:w-auto">
+        <a href={`/tienda/${category.slug}`} class="group flex flex-col items-center gap-2 text-center">
+          <span
+            class:list={[
+              "grid aspect-square w-full place-items-center rounded-full ring-offset-2 transition group-hover:-translate-y-1 group-hover:shadow-lg",
+              activeSlug === category.slug && "ring-2 ring-brand",
+            ]}
+            style={`background:${category.tint}`}
+          >
+            {category.imageUrl ? (
+              <img src={category.imageUrl} alt="" loading="lazy" decoding="async" class="h-full w-full rounded-full object-cover" />
+            ) : category.slug === "otros" ? (
+              <span class="text-4xl font-light text-grape">+</span>
+            ) : (
+              <ProductMockup kind={category.kind} color="#FFFFFF" art={ART[category.slug] ?? "none"} className="h-[82%] w-[82%]" title={category.name} />
+            )}
+          </span>
+          <span class="text-xs leading-tight font-bold sm:text-sm">{category.name}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
