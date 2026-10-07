@@ -1,0 +1,61 @@
+---
+import "../styles/global.css";
+
+import Footer from "../components/layout/Footer.astro";
+import Header from "../components/layout/Header.astro";
+import UtilityBar from "../components/layout/UtilityBar.astro";
+import CartDrawer from "../features/cart/components/CartDrawer";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Imagen para compartir en redes (og:image). */
+  image?: string | null | undefined;
+  type?: "website" | "article";
+}
+
+const {
+  title,
+  description = "Ropa, regalos y productos personalizados con tu diseño. Camisetas, sudaderas, tazas, gorras, bolsas y botellas. Personalización · DTF · Sublimación · Regalos.",
+  image,
+  type = "website",
+} = Astro.props;
+
+const fullTitle = title ? `${title} | Printiva` : "Printiva · Tú lo imaginas, nosotros lo estampamos";
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={type} />
+    {image && <meta property="og:image" content={image} />}
+    <meta name="theme-color" content="#EC1E79" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Kaushan+Script&family=Nunito:wght@400;600;700;800;900&family=Permanent+Marker&display=swap"
+    />
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <a href="#contenido" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-white">
+      Saltar al contenido
+    </a>
+    <UtilityBar />
+    <Header />
+    <main id="contenido" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <CartDrawer client:only="react" />
+  </body>
+</html>

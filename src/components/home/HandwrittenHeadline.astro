@@ -1,0 +1,222 @@
+---
+/**
+ * Titular que "se escribe solo" con rotulador.
+ *
+ * Por qué no stroke-dashoffset sobre la fuente: las letras de una tipografía
+ * son contornos rellenos, no trazos; animarlas dibuja su BORDE, no la mano.
+ * En su lugar cada letra se revela de izquierda a derecha en secuencia (CSS,
+ * funciona sin JS) y un rotulador SVG sigue la punta, sincronizado con la
+ * animación real vía Web Animations API. El subrayado final sí es un trazo.
+ */
+interface Line {
+  text: string;
+  class?: string;
+  highlight?: boolean;
+}
+
+interface Props {
+  lines: Line[];
+  class?: string;
+}
+
+const { lines, class: className } = Astro.props;
+
+// Ritmo de escritura (segundos).
+const START = 0.35;
+const STEP = 0.065; // entre letras (los espacios también cuentan: pausa natural)
+const LETTER = 0.11; // lo que tarda en "trazarse" una letra
+const LINE_PAUSE = 0.32; // levantar el rotulador y bajar de línea
+
+let clock = START;
+const rendered = lines.map((line, lineIndex) => {
+  if (lineIndex > 0) clock += LINE_PAUSE;
+  const words = line.text.split(" ").map((word) => {
+    const letters = [...word].map((char) => {
+      const letter = { char, delay: clock };
+      clock += STEP;
+      return letter;
+    });
+    clock += STEP; // espacio
+    return letters;
+  });
+  return { ...line, words };
+});
+
+const writingEnd = clock + LETTER;
+const fullText = lines.map((line) => line.text).join(" ");
+---
+
+<h1 class:list={["relative font-marker", className]} aria-label={fullText} data-handwriting>
+  {
+    rendered.map((line) => (
+      <span class:list={["relative block w-fit", line.class]} aria-hidden="true">
+        {line.highlight && (
+          <svg class="highlight absolute -bottom-[0.08em] left-[-2%] -z-10 h-[0.42em] w-[104%]" viewBox="0 0 300 30" preserveAspectRatio="none">
+            <path
+              d="M4 18 C 60 8, 120 26, 180 14 S 270 10, 296 16"
+              pathLength="1"
+              style={`animation-delay:${writingEnd.toFixed(2)}s`}
+            />
+          </svg>
+        )}
+        {line.words.map((letters, index) => (
+          <>
+            <span class="inline-block whitespace-nowrap">
+              {letters.map(({ char, delay }) => (
+                <span class="write-letter" data-letter data-delay={delay.toFixed(3)} data-dur={LETTER} style={`--delay:${delay.toFixed(3)}s;--dur:${LETTER}s`}>
+                  {char}
+                </span>
+              ))}
+            </span>
+            {index < line.words.length - 1 && " "}
+          </>
+        ))}
+      </span>
+    ))
+  }
+
+  <!-- Rotulador: (0,0) del contenedor = punta. Solo lo mueve el script. -->
+  <span class="hero-pen pointer-events-none absolute top-0 left-0 opacity-0" data-pen aria-hidden="true">
+    <svg width="1" height="1" overflow="visible" class="drop-shadow-md">
+      <g transform="rotate(-38) translate(0 -9)">
+        <polygon points="0,9 13,3 13,15" fill="#14161F"></polygon>
+        <rect x="13" y="1" width="12" height="16" rx="2" fill="#14161F"></rect>
+        <rect x="25" y="0" width="54" height="18" rx="4" fill="#EC1E79"></rect>
+        <rect x="31" y="3" width="30" height="3" rx="1.5" fill="#FFFFFF" opacity="0.45"></rect>
+        <rect x="76" y="-1" width="12" height="20" rx="3" fill="#C8115F"></rect>
+      </g>
+    </svg>
+  </span>
+</h1>
+
+<style>
+  .write-letter {
+    display: inline-block;
+    animation: write var(--dur) cubic-bezier(0.3, 0.7, 0.4, 1) var(--delay) both;
+  }
+
+  /* Márgenes negativos: los trazos del rotulador sobresalen de la caja.
+     El inicio usa 120% a la derecha para que el ancho visible sea CERO
+     (con 100% asomaría la franja de -20% de la izquierda antes de tiempo). */
+  @keyframes write {
+    from {
+      clip-path: inset(-30% 120% -30% -20%);
+    }
+    to {
+      clip-path: inset(-30% -20% -30% -20%);
+    }
+  }
+
+  .highlight path {
+    fill: none;
+    stroke: var(--color-sun);
+    stroke-width: 22;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0.75;
+    animation: highlight 0.55s ease-out both;
+  }
+
+  /* Oculto hasta empezar: un trazo de largo cero con linecap round
+     igual pinta la "gota" del extremo. */
+  @keyframes highlight {
+    from {
+      opacity: 0;
+    }
+    8% {
+      opacity: 0.75;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .hero-pen {
+    transition: opacity 0.35s ease;
+    will-change: transform;
+  }
+
+  .hero-pen.is-writing {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .write-letter,
+    .highlight path {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+    .hero-pen {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-handwriting]");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (root && !reduced) {
+    const pen = root.querySelector<HTMLElement>("[data-pen]");
+    const letters = [...root.querySelectorAll<HTMLElement>("[data-letter]")].map((el) => ({
+      el,
+      delay: Number(el.dataset.delay),
+      dur: Number(el.dataset.dur),
+    }));
+    const first = letters[0]?.el.getAnimations()[0];
+    const last = letters[letters.length - 1];
+
+    if (pen && first && last) {
+      const end = last.delay + last.dur;
+
+      // Reloj compartido con la animación CSS: el script puede cargar tarde,
+      // pero el rotulador siempre está donde va la escritura.
+      const elapsed = () => {
+        const now = document.timeline.currentTime;
+        return first.startTime == null || now == null ? 0 : (Number(now) - Number(first.startTime)) / 1000;
+      };
+
+      const frame = () => {
+        const t = elapsed();
+        if (t >= end) {
+          pen.classList.remove("is-writing");
+          return;
+        }
+
+        let current = letters[0]!;
+        for (const letter of letters) {
+          if (letter.delay <= t) current = letter;
+          else break;
+        }
+
+        const box = root.getBoundingClientRect();
+        const rect = current.el.getBoundingClientRect();
+        const progress = Math.min(Math.max((t - current.delay) / current.dur, 0), 1);
+        const x = rect.left - box.left + rect.width * progress;
+        // Vaivén vertical: la mano sube y baja mientras traza la letra.
+        const y = rect.top - box.top + rect.height * (0.62 + 0.18 * Math.sin(t * 38));
+
+        pen.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+        pen.classList.add("is-writing");
+        requestAnimationFrame(frame);
+      };
+
+      // Abierta en pestaña de fondo (Cmd+clic): el CSS correría sin que nadie
+      // lo vea. Pausamos y empezamos a escribir cuando la pestaña se muestre.
+      if (document.visibilityState === "hidden") {
+        const animations = root.getAnimations({ subtree: true });
+        animations.forEach((animation) => animation.pause());
+        const onVisible = () => {
+          if (document.visibilityState !== "visible") return;
+          document.removeEventListener("visibilitychange", onVisible);
+          animations.forEach((animation) => animation.play());
+          requestAnimationFrame(frame);
+        };
+        document.addEventListener("visibilitychange", onVisible);
+      } else {
+        requestAnimationFrame(frame);
+      }
+    }
+  }
+</script>

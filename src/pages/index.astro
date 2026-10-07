@@ -1,0 +1,29 @@
+---
+import Benefits from "../components/home/Benefits.astro";
+import Hero from "../components/home/Hero.astro";
+import PromoCards from "../components/home/PromoCards.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import CategoryCircles from "../features/catalog/components/CategoryCircles.astro";
+import ProductGrid from "../features/catalog/components/ProductGrid.astro";
+import { getCategories, getFeaturedProducts } from "../features/catalog/repository";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const [categories, featured] = await Promise.all([getCategories(), getFeaturedProducts()]);
+---
+
+<BaseLayout>
+  <Hero />
+
+  <section class="container-page py-8" aria-label="Categorías">
+    <CategoryCircles categories={categories} />
+  </section>
+
+  <Benefits />
+
+  <section class="container-page py-12">
+    <SectionHeading title="Productos destacados" link={{ href: "/tienda", label: "Ver todos los productos" }} />
+    <ProductGrid products={featured} />
+  </section>
+
+  <PromoCards />
+</BaseLayout>

@@ -1,0 +1,13 @@
+---
+import ProductMockup from "../features/catalog/components/ProductMockup";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Página no encontrada">
+  <div class="container-page flex flex-col items-center py-16 text-center">
+    <ProductMockup kind="tshirt" color="#FFFFFF" text="404" textFont="display" className="w-56" />
+    <h1 class="mt-4 text-3xl font-black">Esta página no está estampada… todavía</h1>
+    <p class="mt-2 text-ink-soft">Puede que el enlace esté roto o que el producto ya no exista.</p>
+    <a href="/" class="btn-brand mt-6">Volver al inicio</a>
+  </div>
+</BaseLayout>

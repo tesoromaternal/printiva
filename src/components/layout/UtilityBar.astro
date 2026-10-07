@@ -1,0 +1,23 @@
+---
+import { Headphones, Heart, ShieldCheck, Truck } from "lucide-react";
+
+const perks = [
+  { icon: Truck, label: "Envíos a toda España" },
+  { icon: ShieldCheck, label: "Pago seguro" },
+  { icon: Heart, label: "Diseños únicos" },
+  { icon: Headphones, label: "Atención personalizada" },
+];
+---
+
+<div class="border-b border-line bg-cloud text-xs font-semibold text-ink-soft">
+  <ul class="container-page scrollbar-none flex items-center justify-between gap-8 overflow-x-auto py-2 whitespace-nowrap">
+    {
+      perks.map(({ icon: Icon, label }) => (
+        <li class="flex items-center gap-2">
+          <Icon className="size-4 text-ink" aria-hidden="true" />
+          {label}
+        </li>
+      ))
+    }
+  </ul>
+</div>

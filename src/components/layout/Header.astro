@@ -1,0 +1,135 @@
+---
+import { ChevronDown, Search, User } from "lucide-react";
+
+import Logo from "../brand/Logo.astro";
+import CartButton from "../../features/cart/components/CartButton";
+import WishlistLink from "../../features/wishlist/components/WishlistLink";
+import { getCategories, getOccasions } from "../../features/catalog/repository";
+
+const [categories, occasions] = await Promise.all([getCategories(), getOccasions()]);
+const path = Astro.url.pathname;
+
+interface NavItem {
+  label: string;
+  href: string;
+  children?: { label: string; href: string }[];
+}
+
+const nav: NavItem[] = [
+  { label: "Inicio", href: "/" },
+  {
+    label: "Tienda",
+    href: "/tienda",
+    children: [
+      { label: "Todos los productos", href: "/tienda" },
+      ...categories.map((c) => ({ label: c.name, href: `/tienda/${c.slug}` })),
+    ],
+  },
+  {
+    label: "Crea tu producto",
+    href: "/crea-tu-producto",
+    children: [
+      { label: "Camiseta", href: "/crea-tu-producto?producto=camiseta-personalizada" },
+      { label: "Sudadera", href: "/crea-tu-producto?producto=sudadera-personalizada" },
+      { label: "Taza", href: "/crea-tu-producto?producto=taza-personalizada" },
+      { label: "Gorra", href: "/crea-tu-producto?producto=gorra-personalizada" },
+      { label: "Bolsa", href: "/crea-tu-producto?producto=bolsa-personalizada" },
+      { label: "Botella", href: "/crea-tu-producto?producto=botella-personalizada" },
+    ],
+  },
+  {
+    label: "Regalos",
+    href: "/regalos",
+    children: occasions.map((o) => ({ label: `${o.emoji} ${o.name}`, href: `/regalos/${o.slug}` })),
+  },
+  {
+    label: "Empresas",
+    href: "/empresas",
+    children: [
+      { label: "Solicitar presupuesto", href: "/empresas#presupuesto" },
+      { label: "Ropa laboral", href: "/tienda/empresas" },
+      { label: "Regalos corporativos", href: "/regalos/empresas" },
+    ],
+  },
+  {
+    label: "Sobre nosotros",
+    href: "/sobre-nosotros",
+    children: [
+      { label: "Quiénes somos", href: "/sobre-nosotros" },
+      { label: "Hecho por nosotros", href: "/sobre-nosotros#trabajos" },
+    ],
+  },
+  { label: "Blog", href: "/blog" },
+  { label: "Contacto", href: "/contacto" },
+];
+
+const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+---
+
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur">
+  <div class="container-page flex flex-wrap items-center gap-x-6 gap-y-3 py-3 lg:py-4">
+    <Logo />
+
+    <form action="/buscar" method="get" role="search" class="order-last w-full lg:order-none lg:mx-auto lg:max-w-md lg:flex-1">
+      <label class="relative block">
+        <span class="sr-only">Buscar productos</span>
+        <input
+          type="search"
+          name="q"
+          placeholder="Busca un producto, una idea, un diseño…"
+          class="w-full rounded-full border border-line bg-white py-2.5 pr-12 pl-5 text-sm shadow-sm transition outline-none placeholder:text-ink-soft/70 focus:border-brand focus:ring-4 focus:ring-brand/10"
+        />
+        <button type="submit" class="absolute top-1/2 right-1.5 grid size-9 -translate-y-1/2 place-items-center rounded-full text-ink hover:bg-cloud" aria-label="Buscar">
+          <Search className="size-5" />
+        </button>
+      </label>
+    </form>
+
+    <div class="ml-auto flex items-center gap-1 sm:gap-3 lg:ml-0">
+      <a href="/cuenta" class="flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-xs font-semibold hover:bg-cloud">
+        <User className="size-6" aria-hidden="true" />
+        <span class="hidden sm:block">Mi cuenta</span>
+      </a>
+      <WishlistLink client:idle />
+      <CartButton client:idle />
+    </div>
+  </div>
+
+  <nav class="border-y border-line" aria-label="Principal">
+    <ul class="container-page scrollbar-none flex items-center gap-1 overflow-x-auto lg:justify-between lg:overflow-visible">
+      {
+        nav.map((item) => (
+          <li class="group relative shrink-0">
+            <a
+              href={item.href}
+              class:list={[
+                "flex items-center gap-1 border-b-2 px-3 py-3 text-sm font-bold transition-colors",
+                isActive(item.href)
+                  ? "border-brand bg-brand-soft/60 text-ink"
+                  : "border-transparent text-ink hover:text-brand",
+              ]}
+            >
+              {item.label}
+              {item.children && (
+                <ChevronDown className="size-4 transition-transform group-focus-within:rotate-180 group-hover:rotate-180" aria-hidden="true" />
+              )}
+            </a>
+            {item.children && (
+              <div class="invisible absolute top-full left-0 z-50 hidden min-w-56 pt-1 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100 lg:block">
+                <ul class="rounded-2xl border border-line bg-white p-2 shadow-xl shadow-ink/5">
+                  {item.children.map((child) => (
+                    <li>
+                      <a href={child.href} class="block rounded-xl px-3 py-2 text-sm font-semibold text-ink-soft hover:bg-brand-soft hover:text-brand">
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>

@@ -1,0 +1,37 @@
+---
+import { ArrowRight } from "lucide-react";
+
+import ProductMockup from "../../features/catalog/components/ProductMockup";
+import MadeByUs from "./MadeByUs.astro";
+---
+
+<section class="container-page grid gap-5 lg:grid-cols-3">
+  <article class="grid grid-cols-[0.8fr_1fr] items-center overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#FFE3EF,#FFF5F9)]">
+    <div class="relative h-full min-h-44" aria-hidden="true">
+      <ProductMockup kind="gift" color="#F7A8C8" art="heart" className="absolute bottom-2 left-0 w-[95%]" />
+    </div>
+    <div class="p-5">
+      <h2 class="text-xl font-extrabold">Regalos personalizados</h2>
+      <p class="mt-1 text-sm text-ink-soft">Para mamá, papá, parejas, cumpleaños, bodas, comuniones…</p>
+      <a href="/regalos" class="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-dark">
+        Ver regalos <ArrowRight className="size-4" />
+      </a>
+    </div>
+  </article>
+
+  <article class="grid grid-cols-[0.8fr_1fr] items-center overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#E8F0FA,#F7F9FC)]">
+    <div class="relative h-full min-h-44 bg-[#1E2A4A]" aria-hidden="true">
+      <ProductMockup kind="polo" color="#FFFFFF" art="logo" className="absolute top-2 left-0 w-[85%]" />
+      <ProductMockup kind="bottle" color="#FFFFFF" text="TU LOGO" textFont="display" className="absolute right-0 bottom-0 w-[50%]" />
+    </div>
+    <div class="p-5">
+      <h2 class="text-xl font-extrabold">Personalización para empresas</h2>
+      <p class="mt-1 text-sm text-ink-soft">Ropa laboral, merchandising, regalos y mucho más.</p>
+      <a href="/empresas#presupuesto" class="btn-ink mt-4">
+        Solicitar presupuesto <ArrowRight className="size-4" />
+      </a>
+    </div>
+  </article>
+
+  <MadeByUs />
+</section>

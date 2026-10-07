@@ -1,0 +1,46 @@
+---
+import { CircleArrowRight } from "lucide-react";
+
+import ProductMockup from "../../features/catalog/components/ProductMockup";
+import HandwrittenHeadline from "./HandwrittenHeadline.astro";
+---
+
+<section class="relative overflow-hidden bg-[linear-gradient(115deg,#FBEFE4_0%,#F6E3D3_45%,#EADBC9_100%)]">
+  <!-- Ambientación: luces suaves a falta de foto real -->
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div class="absolute -top-24 right-1/4 size-96 rounded-full bg-white/60 blur-3xl"></div>
+    <div class="absolute right-0 bottom-0 size-72 rounded-full bg-[#9FC79A]/40 blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/3 size-60 rounded-full bg-[#F7A8C8]/50 blur-3xl"></div>
+  </div>
+
+  <div class="container-page relative grid items-center gap-8 py-10 md:grid-cols-[1fr_1.1fr] md:py-12">
+    <div class="relative z-10 max-w-xl">
+      <div class="py-4 sm:py-6">
+        <HandwrittenHeadline
+          class="-rotate-2 text-[2.6rem] leading-[1.08] text-ink sm:text-6xl lg:text-[4.3rem]"
+          lines={[
+            { text: "Tú lo imaginas." },
+            { text: "Nosotros lo" },
+            { text: "estampamos.", class: "text-brand", highlight: true },
+          ]}
+        />
+        <p class="mt-6 text-base font-semibold text-ink-soft sm:text-lg">
+          Ropa, regalos y productos personalizados con <strong class="text-ink">tu</strong> diseño, para cada momento.
+        </p>
+        <a href="/crea-tu-producto" class="btn-brand mt-6">
+          Personaliza ahora <CircleArrowRight className="size-5" />
+        </a>
+      </div>
+    </div>
+
+    <!-- Composición tipo bodegón sobre un estante -->
+    <div class="relative mx-auto aspect-[1.5] w-full max-w-2xl" aria-hidden="true">
+      <div class="absolute inset-x-[-4%] bottom-0 h-[9%] rounded-md bg-[linear-gradient(180deg,#C99A6B,#9A6B43)] shadow-lg"></div>
+      <ProductMockup shadow={false} kind="tote" color="#EFE4CF" text="Tu diseño aquí" textFont="script" className="absolute right-[-4%] bottom-[6%] w-[46%] drop-shadow-lg" />
+      <ProductMockup shadow={false} kind="tshirt" color="#FFFFFF" art="heart" className="absolute bottom-[7%] left-[-4%] w-[62%] drop-shadow-xl" />
+      <ProductMockup shadow={false} kind="bottle" color="#F7A8C8" text="Sueña Crea Disfruta" textFont="script" textColor="#14161F" className="absolute bottom-[6%] left-[44%] w-[34%] drop-shadow-lg" />
+      <ProductMockup shadow={false} kind="mug" color="#FFFFFF" text="La vida es mejor en buena compañía" textFont="script" className="absolute bottom-[5%] left-[18%] w-[40%] drop-shadow-xl" />
+      <ProductMockup shadow={false} kind="cap" color="#1F2125" art="goodvibes" className="absolute right-[0%] bottom-[3%] w-[42%] drop-shadow-xl" />
+    </div>
+  </div>
+</section>

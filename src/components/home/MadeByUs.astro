@@ -1,0 +1,44 @@
+---
+import { ArrowRight } from "lucide-react";
+
+import ProductMockup, { type ProductMockupProps } from "../../features/catalog/components/ProductMockup";
+
+interface Props {
+  variant?: "card" | "full";
+}
+
+const { variant = "card" } = Astro.props;
+
+// Placeholder hasta tener fotos reales de trabajos (o el feed de Instagram).
+const works: (ProductMockupProps & { label: string; bg: string })[] = [
+  { label: "Camiseta familia", kind: "tshirt", color: "#FFFFFF", text: "Familia", textFont: "script", bg: "#FFE3EF" },
+  { label: "Taza con mascota", kind: "mug", color: "#FFFFFF", art: "paw", bg: "#FFF0B3" },
+  { label: "Gorra aventura", kind: "cap", color: "#1F2125", art: "aventura", bg: "#E3F1FB" },
+  { label: "Bolsa con mensaje", kind: "tote", color: "#EFE4CF", text: "Todo va a estar bien", textFont: "script", bg: "#D3F2E1" },
+  { label: "Sudadera de grupo", kind: "hoodie", color: "#C9B6F2", text: "TEAM BRIDE", textFont: "display", bg: "#EADFFB" },
+  { label: "Body de bautizo", kind: "bodysuit", color: "#FFFFFF", text: "Hola mundo", textFont: "script", bg: "#D3ECFA" },
+];
+
+const shown = variant === "card" ? works.slice(0, 4) : works;
+---
+
+<div class:list={[variant === "card" ? "rounded-3xl bg-[linear-gradient(135deg,#FFF5F9,#FFE3EF)] p-5" : ""]}>
+  <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h2 class:list={["font-extrabold", variant === "card" ? "text-xl" : "text-3xl"]}>Hecho por nosotros ❤️</h2>
+      <p class="text-sm text-ink-soft">Aquí puedes ver algunos de nuestros trabajos. ¿Quieres uno igual? Escríbenos.</p>
+    </div>
+    <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark">
+      Síguenos en Instagram <ArrowRight className="size-3.5" />
+    </a>
+  </div>
+  <ul class:list={["grid gap-2", variant === "card" ? "grid-cols-4" : "grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"]}>
+    {
+      shown.map(({ label, bg, ...mockup }) => (
+        <li class="aspect-square overflow-hidden rounded-xl" style={`background:${bg}`} title={label}>
+          <ProductMockup {...mockup} title={label} className="h-full w-full p-1" />
+        </li>
+      ))
+    }
+  </ul>
+</div>

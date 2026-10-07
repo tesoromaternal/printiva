@@ -1,0 +1,54 @@
+---
+import Logo from "../brand/Logo.astro";
+import NewsletterForm from "../NewsletterForm";
+import SocialIcons from "./SocialIcons.astro";
+
+const links = [
+  { label: "Inicio", href: "/" },
+  { label: "Tienda", href: "/tienda" },
+  { label: "Crea tu producto", href: "/crea-tu-producto" },
+  { label: "Regalos", href: "/regalos" },
+  { label: "Empresas", href: "/empresas" },
+  { label: "Sobre nosotros", href: "/sobre-nosotros" },
+  { label: "Blog", href: "/blog" },
+  { label: "Contacto", href: "/contacto" },
+];
+
+const legal = [
+  { label: "Aviso legal", href: "/legal/aviso-legal" },
+  { label: "Política de privacidad", href: "/legal/privacidad" },
+  { label: "Política de cookies", href: "/legal/cookies" },
+];
+---
+
+<footer class="mt-16 bg-ink text-white">
+  <div class="container-page grid gap-10 py-12 lg:grid-cols-[auto_1fr_auto_auto] lg:items-center lg:gap-12">
+    <Logo tone="light" />
+
+    <nav aria-label="Pie de página">
+      <ul class="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-white/80">
+        {links.map(({ label, href }) => (
+          <li><a href={href} class="hover:text-white">{label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <SocialIcons class="text-white" />
+
+    <div class="max-w-sm">
+      <p class="mb-2 text-sm font-bold">Suscríbete a nuestra newsletter</p>
+      <NewsletterForm client:visible />
+    </div>
+  </div>
+
+  <div class="border-t border-white/10">
+    <div class="container-page flex flex-col gap-3 py-5 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {new Date().getFullYear()} Printiva. Todos los derechos reservados. Personalización · DTF · Sublimación · Regalos</p>
+      <ul class="flex flex-wrap gap-4">
+        {legal.map(({ label, href }) => (
+          <li><a href={href} class="hover:text-white">{label}</a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</footer>
