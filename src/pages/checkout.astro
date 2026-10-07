@@ -1,0 +1,14 @@
+---
+import SectionHeading from "../components/SectionHeading.astro";
+import CheckoutView from "../features/cart/components/CheckoutView";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Finalizar compra">
+  <div class="container-page py-10">
+    <SectionHeading as="h1" title="Finalizar compra" />
+    <CheckoutView client:only="react">
+      <p slot="fallback" class="py-20 text-center font-semibold text-ink-soft">Cargando tu carrito…</p>
+    </CheckoutView>
+  </div>
+</BaseLayout>
