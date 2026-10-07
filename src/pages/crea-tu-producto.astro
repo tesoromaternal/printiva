@@ -1,0 +1,19 @@
+---
+import SectionHeading from "../components/SectionHeading.astro";
+import { getAllProducts } from "../features/catalog/repository";
+import Customizer from "../features/customizer/Customizer";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const products = await getAllProducts();
+---
+
+<BaseLayout title="Crea tu producto" description="Elige producto, color y talla, sube tu imagen, añade tu texto y mira cómo queda antes de comprar.">
+  <div class="container-page py-10">
+    <SectionHeading
+      as="h1"
+      title="Crea el tuyo ✨"
+      subtitle="Elige producto, sube tu imagen o escribe tu frase y mira al instante cómo quedaría. Así de fácil."
+    />
+    <Customizer client:load mode="wizard" products={products} />
+  </div>
+</BaseLayout>

@@ -1,0 +1,39 @@
+---
+import { Clock, Mail, MapPin, MessageCircle } from "lucide-react";
+
+import ContactForm from "../components/ContactForm";
+import SectionHeading from "../components/SectionHeading.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+// Datos de ejemplo: reemplazar por los reales del negocio.
+const info = [
+  { icon: MessageCircle, label: "WhatsApp", value: "+34 600 000 000", href: "https://wa.me/34600000000" },
+  { icon: Mail, label: "Email", value: "hola@printiva.es", href: "mailto:hola@printiva.es" },
+  { icon: MapPin, label: "Taller", value: "España · Envíos a todo el país" },
+  { icon: Clock, label: "Horario", value: "Lunes a viernes, 9:00 – 18:00" },
+];
+---
+
+<BaseLayout title="Contacto" description="Escríbenos y cuéntanos tu idea. Te ayudamos a personalizarla.">
+  <div class="container-page grid gap-10 py-10 lg:grid-cols-[0.8fr_1.2fr]">
+    <div>
+      <SectionHeading as="h1" title="Contacto" subtitle="¿Tienes una idea? ¿Una duda con tu pedido? Escríbenos, respondemos rápido." />
+      <ul class="space-y-4">
+        {
+          info.map(({ icon: Icon, label, value, href }) => (
+            <li class="flex items-center gap-4">
+              <span class="grid size-11 place-items-center rounded-full bg-brand-soft text-brand">
+                <Icon className="size-5" aria-hidden="true" />
+              </span>
+              <span>
+                <span class="block text-xs font-bold text-ink-soft uppercase">{label}</span>
+                {href ? <a href={href} class="font-bold hover:text-brand">{value}</a> : <span class="font-bold">{value}</span>}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <ContactForm client:visible />
+  </div>
+</BaseLayout>

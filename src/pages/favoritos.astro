@@ -1,0 +1,15 @@
+---
+import SectionHeading from "../components/SectionHeading.astro";
+import { getAllProducts } from "../features/catalog/repository";
+import WishlistView from "../features/wishlist/components/WishlistView";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const products = await getAllProducts();
+---
+
+<BaseLayout title="Favoritos">
+  <div class="container-page py-10">
+    <SectionHeading as="h1" title="Tus favoritos ❤️" />
+    <WishlistView client:only="react" products={products} />
+  </div>
+</BaseLayout>

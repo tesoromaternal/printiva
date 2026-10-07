@@ -1,0 +1,21 @@
+---
+import SectionHeading from "../../components/SectionHeading.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+// Placeholder: el texto legal real lo tiene que redactar/validar el titular.
+const PAGES: Record<string, string> = {
+  "aviso-legal": "Aviso legal",
+  privacidad: "Política de privacidad",
+  cookies: "Política de cookies",
+};
+
+const title = PAGES[Astro.params.slug ?? ""];
+if (!title) return Astro.rewrite("/404");
+---
+
+<BaseLayout title={title}>
+  <div class="container-page max-w-3xl py-10">
+    <SectionHeading as="h1" title={title} />
+    <p class="rounded-2xl bg-sun/20 p-5 font-semibold">Contenido pendiente: aquí irá el texto legal de Printiva.</p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,68 @@
+---
+import { Award, Clock, PackageCheck, Palette } from "lucide-react";
+
+import SectionHeading from "../components/SectionHeading.astro";
+import ProductGrid from "../features/catalog/components/ProductGrid.astro";
+import ProductMockup from "../features/catalog/components/ProductMockup";
+import { getProductsByCategory } from "../features/catalog/repository";
+import QuoteForm from "../features/quotes/QuoteForm";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const products = await getProductsByCategory("empresas");
+
+const reasons = [
+  { icon: Palette, title: "Tu marca, impecable", text: "Respetamos colores y logotipo. Te enviamos prueba antes de producir." },
+  { icon: PackageCheck, title: "Desde pocas unidades", text: "Pedidos pequeños y grandes, con descuentos por volumen." },
+  { icon: Clock, title: "Plazos claros", text: "Te damos fecha de entrega cerrada desde el presupuesto." },
+  { icon: Award, title: "Calidad profesional", text: "DTF, sublimación, vinilo y bordado según cada prenda." },
+];
+---
+
+<BaseLayout title="Personalización para empresas" description="Camisetas, polos, sudaderas, bolsas, tazas, botellas, gorras, ropa laboral y merchandising con el logo de tu empresa.">
+  <section class="bg-ink text-white">
+    <div class="container-page grid items-center gap-8 py-14 md:grid-cols-2">
+      <div>
+        <p class="font-bold tracking-widest text-brand uppercase">Empresas y eventos</p>
+        <h1 class="mt-2 font-display text-6xl leading-none sm:text-7xl">Personalización para empresas</h1>
+        <p class="mt-4 text-lg text-white/80">
+          Camisetas · polos · sudaderas · bolsas · tazas · botellas · gorras · ropa laboral · merchandising.
+        </p>
+        <a href="#presupuesto" class="btn-brand mt-6">Solicitar presupuesto</a>
+      </div>
+      <div class="relative mx-auto aspect-[1.3] w-full max-w-lg" aria-hidden="true">
+        <ProductMockup kind="polo" color="#FFFFFF" art="logo" className="absolute top-0 left-0 w-[58%]" />
+        <ProductMockup kind="hoodie" color="#1E2A4A" text="TU MARCA" textFont="display" className="absolute top-[6%] right-0 w-[50%]" />
+        <ProductMockup kind="mug" color="#FFFFFF" art="logo" className="absolute bottom-0 left-[28%] w-[34%]" />
+        <ProductMockup kind="cap" color="#E5383B" text="TEAM" textFont="display" className="absolute right-[4%] bottom-0 w-[32%]" />
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-12">
+    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        reasons.map(({ icon: Icon, title, text }) => (
+          <li class="rounded-3xl bg-cloud p-6">
+            <Icon className="size-8 text-brand" aria-hidden="true" />
+            <p class="mt-3 font-extrabold">{title}</p>
+            <p class="mt-1 text-sm text-ink-soft">{text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="container-page pb-4">
+    <SectionHeading title="Productos para empresas" />
+    <ProductGrid products={products} />
+  </section>
+
+  <section id="presupuesto" class="mt-12 scroll-mt-40 bg-[linear-gradient(135deg,#E8F0FA,#FFF5F9)] py-14">
+    <div class="container-page grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+      <div>
+        <SectionHeading as="h2" title="Solicitar presupuesto" subtitle="Cuéntanos qué necesitas y cuántas unidades. Te respondemos en menos de 24 h laborables, sin compromiso." />
+      </div>
+      <QuoteForm client:visible />
+    </div>
+  </section>
+</BaseLayout>

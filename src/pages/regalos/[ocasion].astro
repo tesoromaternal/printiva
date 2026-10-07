@@ -1,0 +1,45 @@
+---
+import SectionHeading from "../../components/SectionHeading.astro";
+import ProductGrid from "../../features/catalog/components/ProductGrid.astro";
+import { getOccasions, getProductsByOccasion } from "../../features/catalog/repository";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const occasions = await getOccasions();
+const occasion = occasions.find((o) => o.slug === Astro.params.ocasion);
+if (!occasion) return Astro.rewrite("/404");
+
+const products = await getProductsByOccasion(occasion.slug);
+---
+
+<BaseLayout title={`Regalos ${occasion.name.toLowerCase()}`} description={occasion.blurb}>
+  <section class="py-12" style={`background:${occasion.tint}`}>
+    <div class="container-page">
+      <nav class="mb-4 text-sm text-ink-soft" aria-label="Migas de pan">
+        <a href="/" class="hover:text-brand">Inicio</a> / <a href="/regalos" class="hover:text-brand">Regalos</a> /
+        <span class="font-semibold text-ink">{occasion.name}</span>
+      </nav>
+      <p class="text-5xl" aria-hidden="true">{occasion.emoji}</p>
+      <h1 class="mt-3 text-4xl font-black">{occasion.name}</h1>
+      <p class="mt-2 max-w-xl text-lg text-ink-soft">{occasion.blurb}</p>
+    </div>
+  </section>
+
+  <div class="container-page py-10">
+    <SectionHeading title="Ideas que triunfan" />
+    <ProductGrid products={products} />
+
+    <ul class="scrollbar-none mt-12 flex gap-2 overflow-x-auto">
+      {
+        occasions
+          .filter((o) => o.slug !== occasion.slug)
+          .map((o) => (
+            <li class="shrink-0">
+              <a href={`/regalos/${o.slug}`} class="block rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-brand hover:text-brand">
+                {o.emoji} {o.name}
+              </a>
+            </li>
+          ))
+      }
+    </ul>
+  </div>
+</BaseLayout>

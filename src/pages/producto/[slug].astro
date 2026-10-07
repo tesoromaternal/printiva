@@ -1,0 +1,59 @@
+---
+import SectionHeading from "../../components/SectionHeading.astro";
+import ProductGrid from "../../features/catalog/components/ProductGrid.astro";
+import { getAllProducts, getCategoryBySlug } from "../../features/catalog/repository";
+import Customizer from "../../features/customizer/Customizer";
+import WishlistButton from "../../features/wishlist/components/WishlistButton";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const products = await getAllProducts();
+const product = products.find((p) => p.slug === Astro.params.slug);
+if (!product) return Astro.rewrite("/404");
+
+const category = await getCategoryBySlug(product.categorySlug);
+const related = products
+  .filter((p) => p.slug !== product.slug && p.categorySlug === product.categorySlug)
+  .concat(products.filter((p) => p.featured && p.categorySlug !== product.categorySlug))
+  .slice(0, 6);
+const ogImage = product.images[0]?.url;
+---
+
+<BaseLayout title={product.name} description={product.summary} image={ogImage}>
+  <div class="container-page py-8">
+    <nav class="mb-6 flex items-center justify-between gap-4 text-sm text-ink-soft" aria-label="Migas de pan">
+      <span>
+        <a href="/" class="hover:text-brand">Inicio</a> /
+        {category && <><a href={`/tienda/${category.slug}`} class="hover:text-brand">{category.name}</a> /</>}
+        <span class="font-semibold text-ink">{product.name}</span>
+      </span>
+      <WishlistButton client:visible slug={product.slug} name={product.name} className="border border-line" />
+    </nav>
+
+    <Customizer client:load mode="product" products={[product]} initialSlug={product.slug} />
+
+    <section class="mt-14 grid gap-8 rounded-3xl bg-cloud p-6 sm:p-10 lg:grid-cols-3">
+      <div class="lg:col-span-2">
+        <h2 class="text-xl font-extrabold">Descripción</h2>
+        <div class="mt-3 leading-relaxed whitespace-pre-line text-ink-soft">{product.description}</div>
+      </div>
+      <div>
+        <h2 class="text-xl font-extrabold">¿Cómo funciona?</h2>
+        <ol class="mt-3 list-inside list-decimal space-y-1.5 text-ink-soft">
+          <li>Elige color{product.sizes.length > 0 && " y talla"}.</li>
+          <li>Sube tu imagen y/o escribe tu texto.</li>
+          <li>Revisamos tu diseño antes de estampar.</li>
+          <li>Lo preparamos bajo pedido y te lo enviamos.</li>
+        </ol>
+      </div>
+    </section>
+
+    {
+      related.length > 0 && (
+        <section class="mt-14">
+          <SectionHeading title="También te puede gustar" />
+          <ProductGrid products={related} />
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>

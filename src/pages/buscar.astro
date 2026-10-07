@@ -1,0 +1,15 @@
+---
+import SectionHeading from "../components/SectionHeading.astro";
+import SearchResults from "../features/catalog/components/SearchResults";
+import { getAllProducts, getCategories } from "../features/catalog/repository";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const [products, categories] = await Promise.all([getAllProducts(), getCategories()]);
+---
+
+<BaseLayout title="Buscar">
+  <div class="container-page py-10">
+    <SectionHeading as="h1" title="Buscar" />
+    <SearchResults client:load products={products} categories={categories} />
+  </div>
+</BaseLayout>

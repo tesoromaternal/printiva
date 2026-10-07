@@ -1,0 +1,17 @@
+---
+import SectionHeading from "../../components/SectionHeading.astro";
+import CategoryCircles from "../../features/catalog/components/CategoryCircles.astro";
+import ProductGrid from "../../features/catalog/components/ProductGrid.astro";
+import { getAllProducts, getCategories } from "../../features/catalog/repository";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const [categories, products] = await Promise.all([getCategories(), getAllProducts()]);
+---
+
+<BaseLayout title="Tienda" description="Todos nuestros productos personalizables: camisetas, sudaderas, tazas, gorras, bolsas, botellas y regalos.">
+  <div class="container-page py-10">
+    <SectionHeading as="h1" title="Tienda" subtitle="Elige tu producto y hazlo único con tu imagen, tu frase o tu logo." />
+    <div class="mb-10"><CategoryCircles categories={categories} /></div>
+    <ProductGrid products={products} />
+  </div>
+</BaseLayout>

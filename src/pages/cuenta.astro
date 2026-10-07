@@ -1,0 +1,16 @@
+---
+import { User } from "lucide-react";
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Mi cuenta">
+  <div class="container-page py-16">
+    <div class="mx-auto max-w-md rounded-3xl bg-cloud p-10 text-center">
+      <User className="mx-auto size-12 text-brand" />
+      <h1 class="mt-4 text-2xl font-extrabold">Mi cuenta</h1>
+      <p class="mt-2 text-ink-soft">Muy pronto podrás ver tus pedidos, guardar tus diseños y repetir compras en un clic.</p>
+      <a href="/tienda" class="btn-brand mt-6 text-sm">Seguir comprando</a>
+    </div>
+  </div>
+</BaseLayout>

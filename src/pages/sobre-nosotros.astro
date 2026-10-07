@@ -1,0 +1,44 @@
+---
+import MadeByUs from "../components/home/MadeByUs.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const techniques = [
+  { name: "DTF", text: "Colores vivos y detalle fotográfico sobre algodón y mezclas." },
+  { name: "Sublimación", text: "Tazas, botellas y tejidos claros con acabado permanente." },
+  { name: "Vinilo", text: "Textos y logos nítidos, ideal para nombres y números." },
+  { name: "Bordado", text: "Acabado premium para gorras, polos y ropa laboral." },
+];
+---
+
+<BaseLayout title="Sobre nosotros" description="Somos Printiva: personalización, DTF, sublimación y regalos hechos con cariño.">
+  <div class="container-page py-10">
+    <SectionHeading as="h1" title="Sobre nosotros" />
+    <div class="grid gap-10 lg:grid-cols-2">
+      <div class="space-y-4 text-lg leading-relaxed text-ink-soft">
+        <p>
+          En <strong class="text-ink">Printiva</strong> creemos que los mejores regalos son los que cuentan una historia. Por eso convertimos tus
+          fotos, frases y diseños en camisetas, tazas, sudaderas y detalles únicos.
+        </p>
+        <p>
+          Cada pedido se prepara bajo pedido y lo revisamos a mano antes de estampar. Si algo no encaja, te escribimos. Así de simple: tú lo
+          imaginas, nosotros lo estampamos.
+        </p>
+      </div>
+      <ul class="grid grid-cols-2 gap-4">
+        {
+          techniques.map(({ name, text }) => (
+            <li class="rounded-3xl bg-cloud p-5">
+              <p class="font-display text-3xl text-brand">{name}</p>
+              <p class="mt-1 text-sm text-ink-soft">{text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <section id="trabajos" class="mt-16 scroll-mt-40">
+      <MadeByUs variant="full" />
+    </section>
+  </div>
+</BaseLayout>
