@@ -1,0 +1,37 @@
+---
+import { getProduct } from "../../../features/admin/catalog.repository";
+import ProductForm, { type ProductFormValues } from "../../../features/admin/components/ProductForm";
+import { parseId } from "../../../features/admin/http";
+import { getCategories, getOccasions } from "../../../features/catalog/repository";
+import AdminShell from "../../../layouts/AdminShell.astro";
+
+export const prerender = false;
+
+const id = parseId(Astro.params.id);
+const product = id ? await getProduct(id) : null;
+if (!id || !product) return Astro.redirect("/admin/productos");
+
+const [categories, occasions] = await Promise.all([getCategories(), getOccasions()]);
+
+const initial: ProductFormValues = {
+  name: product.name,
+  slug: product.slug,
+  summary: product.summary,
+  description: product.description,
+  categorySlug: product.categorySlug,
+  kind: product.kind,
+  art: product.art,
+  priceCents: product.priceCents,
+  colors: product.colors,
+  sizes: product.sizes,
+  occasions: product.occasions,
+  images: product.images,
+  badge: product.badge,
+  featured: product.featured,
+  active: product.active,
+};
+---
+
+<AdminShell title={product.name} heading={product.name} back={{ href: "/admin/productos", label: "Productos" }}>
+  <ProductForm client:only="react" id={id} initial={initial} categories={categories} occasions={occasions} />
+</AdminShell>

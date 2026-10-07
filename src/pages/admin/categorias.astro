@@ -1,0 +1,17 @@
+---
+import { listProducts } from "../../features/admin/catalog.repository";
+import CategoriesEditor from "../../features/admin/components/CategoriesEditor";
+import { getCategories } from "../../features/catalog/repository";
+import AdminShell from "../../layouts/AdminShell.astro";
+
+export const prerender = false;
+
+const [categories, products] = await Promise.all([getCategories(), listProducts()]);
+const counts: Record<string, number> = {};
+for (const product of products) counts[product.categorySlug] = (counts[product.categorySlug] ?? 0) + 1;
+---
+
+<AdminShell title="Categorías" heading="Categorías">
+  <p class="-mt-3 mb-6 text-sm text-ink-soft">Nombre, descripción, color y foto de los círculos de la tienda. El slug (la URL) es fijo para no romper enlaces.</p>
+  <CategoriesEditor client:only="react" categories={categories} counts={counts} />
+</AdminShell>

@@ -1,0 +1,71 @@
+---
+import { EyeOff, Star } from "lucide-react";
+
+import { listProducts } from "../../../features/admin/catalog.repository";
+import ProductMockup from "../../../features/catalog/components/ProductMockup";
+import { plural } from "../../../features/catalog/labels";
+import { getCategories } from "../../../features/catalog/repository";
+import AdminShell from "../../../layouts/AdminShell.astro";
+import { formatPrice } from "../../../lib/money";
+
+export const prerender = false;
+
+const [products, categories] = await Promise.all([listProducts(), getCategories()]);
+const categoryName = new Map(categories.map((c) => [c.slug, c.name]));
+---
+
+<AdminShell title="Productos" heading={`Productos (${products.length})`}>
+  <a slot="actions" href="/admin/productos/nuevo" class="btn-brand text-sm">+ Nuevo producto</a>
+
+  <div class="mb-4">
+    <label class="relative block max-w-sm">
+      <span class="sr-only">Filtrar productos</span>
+      <input data-filter type="search" placeholder="Filtrar por nombre o categoría…" class="w-full rounded-full border-2 border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-brand" />
+    </label>
+  </div>
+
+  <ul class="divide-y divide-line overflow-hidden rounded-3xl bg-white shadow-sm">
+    {
+      products.map((product) => (
+        <li data-row={`${product.name} ${categoryName.get(product.categorySlug) ?? ""}`.toLowerCase()}>
+          <a href={`/admin/productos/${product.id}`} class:list={["flex items-center gap-4 px-4 py-3 transition hover:bg-cloud", !product.active && "opacity-60"]}>
+            <span class="size-14 shrink-0 overflow-hidden rounded-xl bg-cloud">
+              {product.images[0] ? (
+                <img src={product.images[0].url} alt="" class="h-full w-full object-cover" loading="lazy" />
+              ) : (
+                <ProductMockup kind={product.kind} color={product.colors[0]?.hex ?? "#FFFFFF"} art={product.art} className="h-full w-full p-1" />
+              )}
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="flex items-center gap-2 font-bold">
+                <span class="truncate">{product.name}</span>
+                {product.featured && <Star className="size-4 shrink-0 fill-sun text-sun" aria-label="Destacado" />}
+                {!product.active && (
+                  <span class="flex shrink-0 items-center gap-1 rounded-full bg-cloud px-2 py-0.5 text-xs font-bold text-ink-soft">
+                    <EyeOff className="size-3" /> Oculto
+                  </span>
+                )}
+              </span>
+              <span class="block truncate text-xs text-ink-soft">
+                {categoryName.get(product.categorySlug) ?? product.categorySlug} · {plural(product.images.length, "foto", "fotos")} · {plural(product.colors.length, "color", "colores")}
+              </span>
+            </span>
+            <span class="font-extrabold">{formatPrice(product.priceCents)}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</AdminShell>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>("[data-filter]");
+  const rows = [...document.querySelectorAll<HTMLElement>("[data-row]")];
+  input?.addEventListener("input", () => {
+    const term = input.value.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    for (const row of rows) {
+      const text = (row.dataset.row ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "");
+      row.hidden = term.length > 0 && !text.includes(term);
+    }
+  });
+</script>

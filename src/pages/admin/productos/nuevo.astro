@@ -1,0 +1,35 @@
+---
+import ProductForm, { type ProductFormValues } from "../../../features/admin/components/ProductForm";
+import { getCategories, getOccasions } from "../../../features/catalog/repository";
+import AdminShell from "../../../layouts/AdminShell.astro";
+
+export const prerender = false;
+
+const [categories, occasions] = await Promise.all([getCategories(), getOccasions()]);
+
+const initial: ProductFormValues = {
+  name: "",
+  slug: "",
+  summary: "",
+  description: "",
+  categorySlug: categories[0]?.slug ?? "",
+  kind: "tshirt",
+  art: "heart",
+  priceCents: 1990,
+  colors: [
+    { name: "Blanco", hex: "#FFFFFF" },
+    { name: "Negro", hex: "#1F2125" },
+  ],
+  sizes: ["S", "M", "L", "XL", "XXL"],
+  occasions: [],
+  images: [],
+  badge: null,
+  featured: false,
+  // Nuevo = oculto hasta que lo revises y lo publiques.
+  active: false,
+};
+---
+
+<AdminShell title="Nuevo producto" heading="Nuevo producto" back={{ href: "/admin/productos", label: "Productos" }}>
+  <ProductForm client:only="react" id={null} initial={initial} categories={categories} occasions={occasions} />
+</AdminShell>
